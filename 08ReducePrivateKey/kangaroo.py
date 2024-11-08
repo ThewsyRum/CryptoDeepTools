@@ -1,11 +1,3 @@
-#!/usr/bin/python
-
-# based on code by 57fe, 2019
-# fe57.org/forum/thread.php?board=4&thema=1#1
-
-#######################
-# print() compatibility python 2/3
-from __future__ import print_function
 #######################
 # users settings
 
@@ -104,16 +96,9 @@ if 0:
 #######################
 # python2/3 compatibility
 
-#import sys
-#import time
-if sys.version_info[0] == 2:
-	from time import clock
-else:
-	from time import perf_counter
-	from time import process_time
-	clock = time.perf_counter
-	xrange=range
-	raw_input=input
+from time import perf_counter
+from time import process_time
+clock = time.perf_counter
 
 
 #######################
@@ -278,7 +263,6 @@ def save2file(path, mode, data):
 	if type(data) in (list,tuple,dict,set):
 		fp.writelines(data)
 	else:
-	#elif type(data) in (str,int):
 		fp.write(data)
 	fp.close()
 
@@ -306,10 +290,10 @@ def prefSI(num):
 #print('%s' % prefSI(int(sys.argv[1])));exit(1)
 
 
-def time_format(time, v=(1,1,1,1,1,1,0,0)):
-	sec  = int(time)
-	msec = int((time%1)*1000)
-	mcsec= int((((time%1)*1000)%1)*1000)
+def time_format(time_value, v=(1,1,1,1,1,1,0,0)):
+	sec  = int(time_value)
+	msec = int((time_value%1)*1000)
+	mcsec= int((((time_value%1)*1000)%1)*1000)
 	res  = ''	
 	if v[0]: 
 		y_tmp = (sec//(60*60*24*30))//12
@@ -331,14 +315,14 @@ def time_format(time, v=(1,1,1,1,1,1,0,0)):
 def benchmark_pow2(pow2max=9999):
 	tmp=0
 	t0 = time.time()
-	for i in xrange(1,pow2max):
+	for i in range(1,pow2max):
 		tmp += 1<<i
 	time1 = time.time()-t0
 	print('[%s] %ssec' % ('1<<', time1))
 
 	tmp=0
 	t0 = time.time()
-	for i in xrange(1,pow2max):
+	for i in range(1,pow2max):
 		tmp += 2**i
 	time2 = time.time()-t0
 	print('[%s] %ssec' % ('2**', time2))
@@ -386,11 +370,11 @@ def getPubkey(new_prvkey, flag_compress):
 
 	if flag_compress:
 		if (Ycoord % 2) == 0:
-			new_pubkey = '02%064x' % int(hex(Xcoord)[2:66],16)
+			new_pubkey = '02{:064x}'.format(Xcoord)
 		else:
-			new_pubkey = '03%064x' % int(hex(Xcoord)[2:66],16)
+			new_pubkey = '03{:064x}'.format(Xcoord)
 	else:
-		new_pubkey = '04%064x%064x' % (int(hex(Xcoord)[2:66],16), int(hex(Ycoord)[2:66],16))
+		new_pubkey = '04{:064x}{:064x}'.format(Xcoord, Ycoord)
 
 	return new_pubkey
 
@@ -413,8 +397,8 @@ def getPow2Jmax(optimalmeanjumpsize):
 		#if flag_debug > 1: 
 		#	print('[Njumps#%03d] mean_jumpsize = sumjumpsize/Njumps = %s/%s = %s' % (i, sumjumpsize, i, meanjumpsize ))
 
-		now_meanjumpsize	= int(round(1.0*(sumjumpsize+0)/i))
-		next_meanjumpsize	= int(round(1.0*(sumjumpsize+2**i)/i))
+		now_meanjumpsize	= int(round((sumjumpsize+0)/i))
+		next_meanjumpsize	= int(round((sumjumpsize+2**i)/i))
 
 		if flag_debug > 1: 
 			print('[meanjumpsize#%03dj] %s(now) <= %s(optimal) <= %s(next)' % (i, now_meanjumpsize, optimalmeanjumpsize, next_meanjumpsize ))
@@ -434,12 +418,12 @@ def is_on_curve(Xcoord,Ycoord, p=modulo):
 	# short form Weierstrass cubic 
 	# a_short, b_short
 	# y^2 = x^3 + a*x + b over Fp
-        return ((Ycoord * Ycoord) - (Xcoord * Xcoord * Xcoord) - (A_curve * Xcoord) - B_curve) % p == 0
+	return ((Ycoord * Ycoord) - (Xcoord * Xcoord * Xcoord) - (A_curve * Xcoord) - B_curve) % p == 0
 
 	# full  form Weierstrass cubic 
 	# a_full, b_full, c_full
 	# y^2 = x^3 + a*x^2 + b*x + c over Fp
-        #return ((Ycoord * Ycoord) - (Xcoord * Xcoord * Xcoord) - (A_curve * Xcoord * Xcoord) - (B_curve * Xcoord) - C_curve) % p == 0
+		#return ((Ycoord * Ycoord) - (Xcoord * Xcoord * Xcoord) - (A_curve * Xcoord * Xcoord) - (B_curve * Xcoord) - C_curve) % p == 0
 
 
 #######################
@@ -451,7 +435,7 @@ def KANGAROOS():
 	if flag_profile == "custom":
 
 		#midJsize = (Wsqrt//2)+1
-		midJsize = int(round(1.0*Wsqrt/2))
+		midJsize = int(round(Wsqrt/2))
 
 		pow2Jmax = getPow2Jmax(midJsize)
 		sizeJmax = 2**pow2Jmax
@@ -469,7 +453,7 @@ def KANGAROOS():
 		# mean jumpsize
 		# by Pollard ".. The best choice of m (mean jump size) is w^(1/2)/2 .."
 		#midJsize = (Wsqrt//2)+1
-		midJsize = int(round(1.0*Wsqrt/2))
+		midJsize = int(round(Wsqrt/2))
 
 		pow2Jmax = getPow2Jmax(midJsize)
 		sizeJmax = 2**pow2Jmax
@@ -630,7 +614,7 @@ def KANGAROOS():
 			# info
 			if (flag_debug > 0 and (t2_info-t1_info)>10)  or prvkey:
 				printstr  = '\r[i] DP T+W=%s+%s=%s; dp/kgr=%.1f' % (
-						 len(DTp),len(DWp), len(DTp)+len(DWp), 1.0*(len(DTp)+len(DWp))/2
+						 len(DTp),len(DWp), len(DTp)+len(DWp), (len(DTp)+len(DWp))/2
 						)
 				printstr += ' '*60
 				print(printstr)
@@ -648,22 +632,17 @@ def KANGAROOS():
 				printstr += '; %sj %.1f%%' % (
 						 n_jump if n_jump<10**3 else prefSI(n_jump)
 						#, 2*Wsqrt if 2*Wsqrt < 10**3 else prefSI(2*Wsqrt)
-						, (1.0*n_jump/(2*Wsqrt))*100
+						, (n_jump/(2*Wsqrt))*100
 						)
 				if 1 or flag_debug < 1: 
-					printstr += '; dp/kgr=%.1f' % ( 1.0*(len(DTp)+len(DWp))/2 )
+					printstr += '; dp/kgr=%.1f' % ( (len(DTp)+len(DWp))/2 )
 				#printstr += 'lost_TIME_left'
-				timeleft = (t2-t0)*(1-(1.0*n_jump/(2*Wsqrt)))/(1.0*n_jump/(2*Wsqrt))
+				timeleft = (t2-t0)*(1-(n_jump/(2*Wsqrt)))/(n_jump/(2*Wsqrt))
 				if timeleft > 0:
 					printstr += ';%s ]  ' % ( time_format(timeleft, (1,1,1,1,1,1,0,0)) )
 				else:
 					printstr += ';%s ]  ' % ( time_format(0, (1,1,1,1,1,1,0,0)) )
-				if sys.version_info[0] == 2:
-					print(printstr, end='')
-					sys.stdout.flush()
-				else:
-					print(printstr, end=''
-					, flush=True )
+				print(printstr, end='', flush=True)
 				t1 = t2
 				last_jump = n_jump
 
@@ -680,7 +659,7 @@ if __name__ == '__main__':
 	if os.name == 'nt':
 		#freeze_support()
 		pass
-                                       ##
+	                                   ##
 	print("[################################################]")
 	print("[#    Pollard-kangaroo PrivKey Recovery Tool    #]")
 	print("[#            bitcoin ecdsa secp256k1           #]")
@@ -788,263 +767,4 @@ if __name__ == '__main__':
 
 		W = U - L
 		try:
-			Wsqrt = W**0.5
-			#Wsqrt = math.sqrt(W)
-			Wsqrt = int(Wsqrt)
-		except:
-			usage()
-
-		# M == (L+U)/2 == L+(W/2)
-		#M = (L + U)//2
-		M = L + (W//2)
-
-		pow2L = pow2bits-1
-		pow2U = pow2bits
-		pow2W = pow2bits-1
-		print('[range] 2^%s..2^%s ; W = U - L = 0x%x (2^%s)' % (pow2L, pow2U, W, pow2W))
-
-
-	if pow2W < bitMin or pow2W > bitMax :
-		print('[error] W must be 2^%s..2^%s!' % (bitMin,bitMax))
-		usage()
-	if pow2W > 55 :
-		print('[warn!] W = 2^%s too big! long runtime expected' % (pow2W) )
-
-	print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
-	starttime = time.time()
-
-	Sp = [Gp]
-	for k in xrange(255): 
-		if (not flag_gmpy2) and flag_coincurve:
-			Sp.append(Sp[k].multiply(int_to_bytes(2)))
-		else:
-			Sp.append(mul_2a(Sp[k]))
-	print('[+] Sp-table of pow2 points - ready')
-
-	#print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
-
-	list_runjump, list_runtime, list_dpkgr = list(), list(), list()
-
-	#timeit
-	for i in xrange(Ntimeit):
-
-		print("[~~~~~~~~~~~~~~~~~~~~~~[%s/%s]~~~~~~~~~~~~~~~~~~~~~]"%(i+1,Ntimeit))
-		if flag_debug > 1: 
-			save2file('tame.txt', 'w', '')
-			save2file('wild.txt', 'w', '')
-
-		if 1:
-
-			if len(sys.argv)>2 :
-				pubkey0 = str(sys.argv[2])
-				print('[i] custom pubkey#%s loaded from argv2' % pow2bits)
-
-			elif not (Ntimeit>1 and timeit_eachnewprvkey):
-				try:
-					pubkey0, prvkey0 = pubkeys[pow2bits]
-				except:
-					prvkey0 = random.randint(L,U)
-					pubkey0 = getPubkey(prvkey0, True)	#   compressed
-					#pubkey0 = getPubkey(prvkey0, False)	# uncompressed
-					print('[i] pubkey#%s randomly generated in range [2^%s..2^%s]' % (pow2bits, pow2L, pow2U))
-				else:
-					print('[i] pubkey#%s loaded from default table' % pow2bits)
-			else:
-				if 1:
-					prvkey0 = random.randint(L,U)
-					pubkey0 = getPubkey(prvkey0, True)	#   compressed
-					#pubkey0 = getPubkey(prvkey0, False)	# uncompressed
-					print('[i] pubkey#%s randomly generated in range [2^%s..2^%s]' % (pow2bits, pow2L, pow2U))
-
-			# location in keyspace on the strip
-			if flag_debug > -1 :
-				if prvkey0 not in (0,'0',False,'False','false',''):
-					len100perc = 60
-					size1perc = W//len100perc
-					print("[i] [2^%.1f|%s%s%s|2^%.1f]" % (pow2L
-						, '-'*((prvkey0-L)//size1perc)
-						, 'K'
-						, '-'*((U-prvkey0)//size1perc)
-						, pow2U)
-					);#exit(1)
-
-			if flag_pow2bits:
-				if prvkey0 not in (0,'0',False,'False','false',''):
-					print('[prvkey#%s] 0x%064x' % (pow2bits,prvkey0))
-				print('[pubkey#%s] %s' % (pow2bits,pubkey0))
-			if flag_keyspace:
-				if prvkey0 not in (0,'0',False,'False','false',''):
-					print('[prvkey#xx] 0x%064x' % (prvkey0))
-				print('[pubkey#xx] %s' % (pubkey0))
-	
-			# check format pubkey
-			if len(pubkey0)==130:
-				X = int(pubkey0[2:66], 16)
-				Y = int(pubkey0[66:],16)
-				flag_compress = False
-				print("[format] uncompressed")
-			elif len(pubkey0)==66:
-				X = int(pubkey0[2:66], 16)
-				# calculation Y from X if pubkey is compressed
-				Y = getX2Y(X,int(pubkey0[:2])-2)
-				flag_compress = True
-				print("[format] compressed")
-			else:
-				print("[error] pubkey len(66/130) invalid!")
-				usage()
-
-			#print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
-			print("[Xcoordinate] %064x" % X)
-			print("[Ycoordinate] %064x" % Y)
-			#print("[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]")
-
-			if not is_on_curve(X,Y):
-				print("[error] the given point not lies on the elliptic curve!")
-				usage()
-			
-			# wild root
-			if (not flag_gmpy2) and flag_coincurve:
-				W0p = PublicKey.from_point(X,Y)
-			else:
-				W0p = Point(X,Y)
-
-
-		# call KANGAROOS()
-		prvkey, runjump, runtime, lenT,lenW = KANGAROOS()
-
-		# save stat for avg
-		list_runjump.append(runjump)
-		list_runtime.append(runtime)
-		list_dpkgr.append(1.0*(lenT+lenW)/2)
-		
-		print('')
-		print('[prvkey#%s] 0x%064x' % (pow2bits,prvkey) )
-		save2file('Privkey.txt', 'a', ('%064x\n'%prvkey, '---------------\n'))
-
-		# double-check privkey
-		if prvkey0 not in (0,'0',False,'False','false',''):
-			if prvkey != prvkey0:
-				print('[origin#%s] 0x%064x' % (pow2bits,prvkey0))
-				print('[prvkey-check] failed!')
-
-		# double-check pubkey
-		if 1:
-			#pubkey = str(bytes_to_hex(PublicKey.from_valid_secret(int_to_bytes_padded(prvkey)).format(flag_compress)))
-			pubkey = getPubkey(prvkey,flag_compress)
-
-			if pubkey != pubkey0:
-				print('[pubkey#%s] %s' % (pow2bits,pubkey))
-				print('[origin#%s] %s' % (pow2bits,pubkey0))
-				print('[pubkey-check] failed!')
-
-		# location in keyspace on the strip
-		if 1:
-			if flag_debug > -1:
-				len100perc = 60
-				size1perc = W//len100perc
-				print("[i] [2^%.1f|%s%s%s|2^%.1f]" % (
-					 math.log(L,2)
-					, '-'*((prvkey-L)//size1perc)
-					, 'K'
-					, '-'*((U-prvkey)//size1perc)
-					, math.log(U,2)
-					)
-				);#exit(1)
-		
-		# finish stat
-		printstr = '[i] %s j/s; %sj of %sj %.1f%%; DP T+W=%s+%s=%s; dp/kgr=%.1f' % (
-			 prefSI(runjump/1) if runtime==0 else prefSI(runjump/runtime)
-			, runjump if runjump<10**3 else prefSI(runjump)
-			, 2*Wsqrt if 2*Wsqrt < 10**3 else prefSI(2*Wsqrt)
-			, (1.0*runjump/(2*Wsqrt))*100
-			, lenT,lenW, lenT+lenW, 1.0*(lenT+lenW)/2
-			)
-		printstr += '  '
-		print(printstr)
-		#print('[runtime]%s' % time_format(runtime))
-		print('[runtime]%s' % time_format(runtime, (1,1,1,1,1,1,0,0)))
-
-
-	print("[################################################]")
-
-	#avgTime = (time.time()-starttime)/Ntimeit
-	avgTime = 1.0 * sum(runtime for runtime in list_runtime) / len(list_runtime)
-	avgJump = 1.0 * sum(runjump for runjump in list_runjump) / len(list_runjump)
-	avgDPkg = 1.0 * sum(rundpkg for rundpkg in list_dpkgr) / len(list_dpkgr)
-	#D = sum((xi - avgJump) ** 2 for xi in list_runjump)*1.0 / len(list_runjump)
-
-	if Ntimeit > 1:
-		##print('[(avg)jump] %.0f' % (avgJump) )
-		#print('[(avg)jump] %s ' % (int(avgJump) if avgJump<10**3 else prefSI(avgJump)) )
-		##print('[(avg)jum2] %.1f +/- %.1f' % (avgJump, (D/(len(list_runjump)-1))**0.5) )
-		#print('[(avg)dpkg] %s ' % (int(avgDPkg) if avgDPkg<10**3 else prefSI(avgDPkg)) )
-		#print('[(avg)time]%s' % time_format(avgTime, (1,1,1,1,1,1,1,0)) )
-
-		print("[averages] expected of 2w^(1/2) group operations")
-		print("-------|--------/--------|---------------------------------/---------------------------------|")
-		print("   W   |jump avg/2w^(1/2)| time                         avg/2w^(1/2)                         |")
-		print("-------|--------/--------|---------------------------------/---------------------------------|")
-		if 1:
-			i = pow2W
-			xi = 1
-			print('%s2^%03d |  %06s/ %06s |%032s /%032s |' % 
-					(	'>' if i==pow2W else ' '
-						,i
-						,int(avgJump) if int(avgJump*xi)<10**3 else prefSI(avgJump*xi)
-						,int(2*(2**i)**0.5) if int(2*(2**i)**0.5)<10**3 else prefSI(2*(2**i)**0.5)
-						,time_format( avgTime * xi , (1,1,1,1,1,1,1,0)) 
-						,time_format( (avgTime * xi)/(avgJump/(2*Wsqrt)) , (1,1,1,1,1,1,1,0)) 
-					) 
-			)
-		print("----------------------------------------------------------------------------------------------")
-	else:
-		pass
-
-	print("[################################################]")
-	print('[date] {}'.format(time.ctime()))
-	print("[################################################]")
-
-	if 1:
-		#bitMin = 10
-		#bitMax = 256
-
-		try:
-			print('');raw_input('Press ENTER to get [prognose] or Ctrl+C to [exit] ...');print('')
-		except:
-			print('\n[exit] exit')
-			exit(0)
-
-		print("[prognose] expected of 2w^(1/2) group operations")
-
-		print("-------|--------/--------|---------------------------------/---------------------------------|")
-		print("   W   |jump avg/2w^(1/2)| time                         avg/2w^(1/2)                         |")
-		print("-------|--------/--------|---------------------------------/---------------------------------|")
-		for i in xrange(bitMin,pow2W):
-			xi = ((2**i)**0.5) / Wsqrt
-			print('%s2^%03d |  %06s/ %06s |%032s /%032s |' % 
-					(	' '
-						,i
-						,int(avgJump*xi) if int(avgJump*xi)<10**3 else prefSI(avgJump*xi)
-						,int(2*(2**i)**0.5) if int(2*(2**i)**0.5)<10**3 else prefSI(2*(2**i)**0.5)
-						,time_format( avgTime * xi , (1,1,1,1,1,1,1,0)) 
-						,time_format( (avgTime * xi)/(avgJump/(2*Wsqrt)) , (1,1,1,1,1,1,1,0)) 
-					) 
-			)
-		for i in xrange(pow2W,bitMax+1):
-			xi = ((2**i)**0.5) / Wsqrt
-			print('%s2^%03d |  %06s/ %06s |%032s /%032s |' % 
-					(	'>' if i==pow2W else ' '
-						,i
-						,int(avgJump*xi) if int(avgJump*xi)<10**3 else prefSI(avgJump*xi)
-						,int(2*(2**i)**0.5) if int(2*(2**i)**0.5)<10**3 else prefSI(2*(2**i)**0.5)
-						,time_format( avgTime * xi , (1,1,1,1,1,1,1,0)) 
-						,time_format( (avgTime * xi)/(avgJump/(2*Wsqrt)) , (1,1,1,1,1,1,1,0)) 
-					) 
-			)
-		print("----------------------------------------------------------------------------------------------")
-
-	print("[################################################]")
-	#print('[date] {}'.format(time.ctime()))
-	print('[exit] exit')
-	#print('');raw_input('Press ENTER to continue...');print('')
-	exit(0)
+			W
